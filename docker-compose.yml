@@ -6,4 +6,3 @@ services:
     restart: always
     environment:
       - API_KEY=${API_KEY}
-      - VERBOSE=${VERBOSE}
