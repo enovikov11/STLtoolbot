@@ -18,6 +18,8 @@ def build(text, path):
     text_object.data.body = text
     text_object.data.extrude = 0.5
     text_object.data.font = custom_font
+    text_object.data.align_x = 'CENTER'
+    text_object.data.align_y = 'CENTER'
     bpy.ops.object.convert(target="MESH")
 
     cover_size = 1
@@ -41,11 +43,11 @@ def build(text, path):
 
     bpy.context.view_layer.update()
     bpy.ops.object.select_all(action="SELECT")
-    bpy.ops.export_mesh.stl(filepath=path)
+    bpy.ops.export_mesh.stl(filepath=path, check_existing=False)
     bpy.ops.object.delete()
 
 
-valid_text_re = r"^[ а-яёА-ЯЁa-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|\\;:\"\',.<>\/?]{1,300}$"
+valid_text_re = r"^[ \nа-яёА-ЯЁa-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|\\;:\"\',.<>\/?]{1,300}$"
 
 
 async def on_text(update, context):
