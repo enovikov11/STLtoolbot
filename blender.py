@@ -1,5 +1,6 @@
 from telegram.ext import Application, MessageHandler, filters
 from telegram import InputFile
+import json
 import bpy
 import os
 import re
@@ -51,6 +52,9 @@ valid_text_re = r"^[ \nа-яёА-ЯЁa-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|\\;:\"\',.<>
 
 
 async def on_text(update, context):
+    if os.getenv("VERBOSE") == "1":
+        print(json.dumps(update.to_dict()))
+    
     if re.match(valid_text_re, update.message.text):
         build(update.message.text, "./temp.stl")
         with open("./temp.stl", "rb") as file:
@@ -63,5 +67,5 @@ async def on_text(update, context):
         )
 
 app = Application.builder().token(os.getenv("API_KEY")).build()
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
+app.add_handler(MessageHandler(filters.TEXT, on_text))
 app.run_polling()
