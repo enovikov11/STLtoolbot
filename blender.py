@@ -5,12 +5,6 @@ import bpy
 import os
 import re
 
-bpy.context.scene.unit_settings.system = "METRIC"
-bpy.context.scene.unit_settings.scale_length = 0.001
-
-font_path = bpy.path.abspath("//RobotoMono-Bold.ttf")
-custom_font = bpy.data.fonts.load(font_path)
-
 
 def build(text, path):
     bpy.ops.object.text_add()
@@ -48,13 +42,10 @@ def build(text, path):
     bpy.ops.object.delete()
 
 
-valid_text_re = r"^[ \nа-яёА-ЯЁa-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|\\;:\"\',.<>\/?]{1,300}$"
-
-
 async def on_text(update, context):
     if os.getenv("VERBOSE") == "1":
         print(json.dumps(update.to_dict()))
-    
+
     if re.match(valid_text_re, update.message.text):
         build(update.message.text, "./temp.stl")
         with open("./temp.stl", "rb") as file:
@@ -65,6 +56,14 @@ async def on_text(update, context):
             text="Связь с автором - @enovikov11. Текст не прошел валидацию регуляркой " +
             str(valid_text_re)
         )
+
+valid_text_re = r"^[ \nа-яёА-ЯЁa-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|\\;:\"\',.<>\/?]{1,300}$"
+
+bpy.context.scene.unit_settings.system = "METRIC"
+bpy.context.scene.unit_settings.scale_length = 0.001
+font_path = bpy.path.abspath("//RobotoMono-Bold.ttf")
+custom_font = bpy.data.fonts.load(font_path)
+bpy.ops.object.delete()
 
 app = Application.builder().token(os.getenv("API_KEY")).build()
 app.add_handler(MessageHandler(filters.TEXT, on_text))
