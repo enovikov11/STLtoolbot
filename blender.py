@@ -1,5 +1,7 @@
 from telegram.ext import Application, MessageHandler, filters
 from telegram import InputFile
+from asyncio import Lock
+import tempfile
 import json
 import bpy
 import os
@@ -43,21 +45,25 @@ def build(text, path):
 
 
 async def on_text(update, context):
-    if os.getenv("VERBOSE") == "1":
+    async with lock:
         print(json.dumps(update.to_dict()))
 
-    if re.match(valid_text_re, update.message.text):
-        build(update.message.text, "./temp.stl")
-        with open("./temp.stl", "rb") as file:
-            await context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(file, update.message.text + ".stl"))
-    else:
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="Связь с автором - @enovikov11. Текст не прошел валидацию регуляркой " +
-            str(valid_text_re)
-        )
+        if re.match(valid_text_re, update.message.text):
+            with tempfile.NamedTemporaryFile(suffix='.stl', delete=True) as tmp:
+                build(update.message.text, tmp.name)
+                with open(tmp.name, "rb") as file:
+                    await context.bot.send_document(
+                        chat_id=update.effective_chat.id,
+                        document=InputFile(file, update.message.text + ".stl")
+                    )
+        else:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Связь с автором - @enovikov11. Текст не прошел валидацию, см https://github.com/enovikov11/STLtoolbot/blob/main/blender.py"
+            )
 
 valid_text_re = r"^[ \nа-яёА-ЯЁa-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|\\;:\"\',.<>\/?]{1,300}$"
+lock = Lock()
 
 bpy.context.scene.unit_settings.system = "METRIC"
 bpy.context.scene.unit_settings.scale_length = 0.001
