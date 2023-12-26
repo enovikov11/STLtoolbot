@@ -5,8 +5,13 @@ import tempfile
 import random
 import socket
 import json
+import sys
 import os
 import re
+
+dir = os.path.dirname(os.path.abspath(__file__))
+if dir not in sys.path:
+    sys.path.append(dir)
 
 from tools import init, build_text
 
